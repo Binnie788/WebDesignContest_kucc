@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #000
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <!-- <script>
+        const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+        let W = 0, H = 0, U = 0, DPR = 1;
+
+        function resize() {
+            const w = window.innerWidth, h = window.innerHeight;
+            if (W === w && Math.abs(H - h) < 120) return;
+            W = w; H = h; U = Math.min(H, W * 0.7);
+            DPR = Math.min(window.devicePixelRatio || 1, 2);
+            cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+        }
+        window.addEventListener('resize', resize); resize();
+
+        /* ===== bulb colours (same as v3) ===== */
+        const COLORS = ['#ffb020', '#ff3d7f', '#ff7a1a', '#2ee6d6', '#8cff4a', '#b04dff', '#ffe14d'];
+
+        /* ===== helper (same as v3) ===== */
+        function poly(pts, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.fill(); }
+
+        /* ===== lights (same as v3) ===== */
+        function bulb(x, y, r, c, a) {
+            ctx.fillStyle = c;
+            ctx.globalAlpha = a * .28; ctx.beginPath(); ctx.arc(x, y, r * 3, 0, 7); ctx.fill();
+            ctx.globalAlpha = Math.min(1, a + .2); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+        }
+        function lightString(x1, y1, x2, y2, sag, n, t, sd) {
+            ctx.globalAlpha = .7; ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 + sag * 2, x2, y2); ctx.stroke();
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i <= n; i++) { const f = i / n; bulb(x1 + (x2 - x1) * f, y1 + (y2 - y1) * f + sag * 4 * f * (1 - f), U * .005 + 1.5, COLORS[(i + sd) % 7], .6 + .4 * Math.sin(t * 3 + i * 1.7 + sd)); }
+            ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+        }
+
+        /* ===== building (same as v3) ===== */
+        function building(t, gy) {
+            const fw = W * .2, sw = W * .32, top = H * .06, fh = H * .17, drop = H * .12, rise = H * .2, rows = Math.floor((gy - top) / fh), cols = 3;
+            const sp = function (s, v) { return [fw + (sw - fw) * s, (top + drop * s) + ((gy - rise * s) - (top + drop * s)) * v]; };
+            const g = ctx.createLinearGradient(0, top, 0, gy); g.addColorStop(0, '#1d1530'); g.addColorStop(1, '#0b0814');
+            ctx.fillStyle = g; ctx.fillRect(0, top, fw, gy - top);
+            poly([[fw, top], [sw, top + drop], [sw, gy - rise], [fw, gy]], '#120c20');
+            ctx.fillStyle = '#2a1d42'; ctx.fillRect(0, top - H * .025, fw, H * .025);
+            poly([[0, top - H * .025], [fw, top - H * .025], [sw, top + drop - H * .02], [sw, top + drop], [fw, top]], '#2a1d42');
+            for (let r = 0; r < rows; r++) {
+                const y0 = top + r * fh;
+                for (let c = 0; c < cols; c++) {
+                    let lit = ((r * 7 + c * 13) % 5) > 1;
+                    ctx.globalAlpha = lit ? .55 + .1 * Math.sin(t + r + c) : 1; ctx.fillStyle = lit ? '#ffcf70' : '#0a0712';
+                    ctx.fillRect(fw * (.1 + c * .3), y0 + fh * .25, fw * .2, fh * .45); ctx.globalAlpha = 1;
+                    lit = ((r * 5 + c * 11) % 4) > 0;
+                    const s0 = .1 + c * .3, s1 = s0 + .2, v0 = (r + .25) / rows, v1 = (r + .7) / rows;
+                    ctx.globalAlpha = lit ? .5 : 1; poly([sp(s0, v0), sp(s1, v0), sp(s1, v1), sp(s0, v1)], lit ? '#ffb54a' : '#0a0712'); ctx.globalAlpha = 1;
+                }
+                const yF = y0 + fh * .88, yS = sp(1, (r + .88) / rows)[1];
+                lightString(0, yF, fw * .5, yF + H * .012, H * .014, 9, t, r);
+                lightString(fw * .5, yF + H * .012, fw, yF, H * .014, 9, t, r + 3);
+                lightString(fw, yF, sw, yS, H * .01, 10, t, r + 5);
+            }
+            lightString(0, top - H * .03, fw, top - H * .03, H * .02, 16, t, 2);
+            lightString(fw, top - H * .03, sw, top + drop - H * .025, H * .015, 10, t, 4);
+        }
+
+        /* ===== preview loop ===== */
+        function frame() {
+            const t = Date.now() / 1000;
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            ctx.clearRect(0, 0, W, H);
+            const gy = H;                                                              // where the building ends (bottom of the screen)
+            building(t, gy);                                                           // left building
+            ctx.save(); ctx.translate(W, 0); ctx.scale(-1, 1); building(t + 1, gy); ctx.restore();   // right building (mirror)
+            window.requestAnimationFrame(frame);
+        }
+        frame();
+    </script> -->
+    <script>
+
+        const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+        let W = 0, H = 0, U = 0, DPR = 1;
+
+        function resize() {
+            const w = window.innerWidth, h = window.innerHeight;
+            if (W === w && Math.abs(H - h) < 120) return;        // ignore phone address-bar wobble
+            W = w; H = h; U = Math.min(H, W * 0.6);
+            DPR = Math.min(window.devicePixelRatio || 1, 2);
+            cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+        }
+        window.addEventListener('resize', resize); resize();
+        const COLORS = ['#ffb020', '#ff3d7f', '#ff7a1a', '#2ee6d6', '#8cff4a', '#b04dff', '#ffe14d'];
+
+       function poly(pts, c) {// filled polygon
+            ctx.fillStyle = c;                               // pick the colour
+            ctx.beginPath();                                 // start a new shape
+            ctx.moveTo(pts[0][0], pts[0][1]);                // go to the first corner
+            for (let i = 1; i < pts.length; i++)
+                ctx.lineTo(pts[i][0], pts[i][1]);              // draw a line to each next corner
+            ctx.fill();                                      // fill the closed shape
+            }
+
+        function bulb(x, y, r, c, a) {                                  // glowing bulb
+            ctx.fillStyle = c;
+            ctx.globalAlpha = a * .28; //how bright or dim
+            ctx.beginPath(); 
+            //the glow
+            ctx.arc(x, y, r * 3, 0, 7); 
+            ctx.fill();
+            ctx.globalAlpha = Math.min(1, a + .1);  //core ko brightness
+            ctx.beginPath(); 
+            //core ko circle
+            ctx.arc(x, y, r, 0, 7); 
+            ctx.fill();
+        }
+        
+        function lightString(x1, y1, x2, y2, sag, n, t, sd) {              // drooping wire with twinkling bulbs
+            ctx.globalAlpha = .7; 
+            ctx.strokeStyle = '#000'; 
+            ctx.lineWidth = 1;
+            ctx.beginPath(); 
+            ctx.moveTo(x1, y1); 
+            ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 + sag * 2, x2, y2); ctx.stroke();
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i <= n; i++) { 
+                const f = i / n; 
+                bulb(x1 + (x2 - x1) * f, y1 + (y2 - y1) * f + sag * 4 * f * (1 - f), U * .005 + 1.5, COLORS[(i + sd) % 7], .6 + .4 * Math.sin(t * 3 + i * 1.7 + sd)); }
+            ctx.globalCompositeOperation = 'source-over'; 
+            ctx.globalAlpha = 1;
+        }
+
+        function building(t, gy){
+            const fw=W*.2, sw=W*.32, top=H*.16, fh=H*.117, drop=H*.12, rise=H*.2, rows=Math.floor((gy-top)/fh), cols=3;
+            // top=H*.16  changes the distance from top and start of building
+            // fw=W*.2 = incharge of left side of the bulding
+            //sw=W*.32  = incharge of right side of the bulding
+            //fh=H*.17  = incharge of height of the building
+            //drop=H*.12 = angle of the right side of building
+            const sp = function(s,v){ 
+                return [fw+(sw-fw)*s, (top+drop*s)+((gy-rise*s)-(top+drop*s))*v]; };
+            const g = ctx.createLinearGradient(0,top,0,gy); 
+            g.addColorStop(0,'#1d1530');  //color of the left face of the building
+            // g.addColorStop(1,'#0b0814'); //color for gradient of the left face of the building
+            ctx.fillStyle = g; //prolly the purple, gives bright yellow orange without it
+            ctx.fillRect(0,top,fw,gy-top); //the purple too
+            poly([[fw,top],[sw,top+drop],[sw,gy-rise],[fw,gy]],'#120c20');  //face of right side
+            ctx.fillStyle = '#2a1d42'; 
+            ctx.fillRect(0,top-H*.025,fw,H*.025);
+            poly([[0,top-H*.025],[fw,top-H*.025],[sw,top+drop-H*.02],[sw,top+drop],[fw,top]],'#2a1d42');
+            for (let r=0;r<rows;r++){
+                const y0 = top + r*fh;
+                for (let c=0;c<cols;c++){ //gives windows and all
+                    let lit = ((r*7+c*13)%5) > 1;
+                    ctx.globalAlpha = lit ? .55+.1*Math.sin(t+r+c) : 1; 
+                    ctx.fillStyle = lit ? '#ffcf70' : '#0a0712';
+                    ctx.fillRect(fw*(.1+c*.3), y0+fh*.25, fw*.2, fh*.45); 
+                    ctx.globalAlpha = 1;
+                    lit = ((r*5+c*11)%4) > 0;
+                    const s0=.1+c*.3, s1=s0+.2, v0=(r+.25)/rows, v1=(r+.7)/rows;
+//const s0=.1(placement of right face windows) +c*.3 (gapping between the windows), s1=s0+.2 (lenght of the window), v0=(r+.25)/rows, v1=(r+.7)/rows;
+
+                    ctx.globalAlpha = lit ? .5 : 1; //adjusting color of windows on right face
+                    poly([sp(s0,v0),sp(s1,v0),sp(s1,v1),sp(s0,v1)], lit ? '#ffb54a' : '#0a0712'); //windows on right face
+                    ctx.globalAlpha = 1;
+                }
+                const yF = y0+fh*.88, yS = sp(1,(r+.88)/rows)[1];
+
+                //lights from left to right
+                lightString(0,yF,fw*.5,yF+H*.012,H*.014,9,t,r);
+                lightString(fw*.5,yF+H*.012,fw,yF,H*.014,9,t,r+3);
+                lightString(fw,yF,sw,yS,H*.01,10,t,r+5);
+            }
+            //top ko dwita lights
+            lightString(0,top-H*.03,fw,top-H*.03,H*.02,16,t,2);
+            lightString(fw,top-H*.03,sw,top+drop-H*.025,H*.015,10,t,4);
+        }
+
+        /* ===== preview loop ===== */
+        function frame() {
+            const t = Date.now() / 1000;
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            ctx.clearRect(0, 0, W, H);
+            const gy = H;                                                              // where the building ends (bottom of the screen)
+            building(t, gy);                                                           // left building
+            ctx.save(); 
+            ctx.translate(W,100); //can change the positionof the right bulding
+            ctx.scale(-1.1,1);  //size of the right building a mirror of the left
+            building(t+1, gy); 
+            ctx.restore();   // right building (mirror)
+            window.requestAnimationFrame(frame);
+        }
+        frame();
+
+
+    </script>
+</body>
+
+</html>
