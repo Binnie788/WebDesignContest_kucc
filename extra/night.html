@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #000
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    
+    <script>
+
+        const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+        let W = 0, H = 0, U = 0, DPR = 1;
+
+        
+        function resize() {
+            const w = window.innerWidth, h = window.innerHeight;
+            if (W === w && Math.abs(H - h) < 120) return;        // ignore phone address-bar wobble
+            W = w; H = h; U = Math.min(H, W * 0.6);
+            DPR = Math.min(window.devicePixelRatio || 1, 2);
+            cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+        }
+        window.addEventListener('resize', resize); resize();
+        
+        const COLORS = ['#ffb020', '#ff3d7f', '#ff7a1a', '#2ee6d6', '#8cff4a', '#b04dff', '#ffe14d'];
+        
+        let seed = 11;
+        function ell(x, y, rx, ry, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); }   // filled oval/circle
+        function rand() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }      // same "random" every load
+
+        const stars = [], blocks = [], cityLights = [], pondDiyas = [];
+        for (let i = 0; i < 160; i++) stars.push({ x: rand(), y: rand() * .6, r: rand() * 1.3 + .3, p: rand() * 6 });
+        for (let l = 0; l < 3; l++) { for (let x = 0; x < 1;) { const w = .02 + rand() * .03; blocks.push({ x: x, w: w, h: .04 + rand() * .1, l: l }); x += w * .9; } }
+        for (let i = 0; i < 380; i++) cityLights.push({ x: rand(), y: rand(), c: COLORS[Math.floor(rand() * 7)], p: rand() * 6 });
+
+        function scenery(t, gy) {
+            const hz = H * .762;
+            const sk = ctx.createLinearGradient(0, 0, 0, hz); 
+            sk.addColorStop(0, '#04021a'); 
+            sk.addColorStop(.6, '#1a0b3a'); 
+            sk.addColorStop(0, '#5a1a55'); //inverted the gradient than the project 
+            ctx.fillStyle = sk; ctx.fillRect(0, 0, W, gy);                                                         // sky
+            ctx.fillStyle = '#fff';
+            stars.forEach(function (s) { 
+                ctx.globalAlpha = .5 + .5 * Math.sin(t * 2 + s.p); 
+                ctx.fillRect(s.x * W, s.y * H, s.r, s.r); 
+            });
+            //moon
+            ctx.globalAlpha = 1; 
+            ell(W / 2, H * .2, U * .04, U * .04, '#fff3d0');
+            ctx.globalAlpha = .15; ell(W / 2, H * .2, U * .1, U * .1, '#fff3d0'); 
+            ctx.globalAlpha = 1; 
+            //skyline
+            blocks.forEach(function (b) { 
+                const h = b.h * H * (1.5 + b.l * .3); //height of block changes from 0.3 to 0.53
+                ctx.fillStyle = ['#170f2b', '#110a22', '#0b0618'][b.l]; 
+                ctx.fillRect(b.x * W, hz - h, b.w * W, h + H * .02); 
+            });   
+            ctx.globalCompositeOperation = 'lighter';
+            //lights in background
+            cityLights.forEach(function (l) { 
+                ctx.fillStyle = l.c; 
+                ctx.globalAlpha = .25 + .4 * (.5 + .5 * Math.sin(t * 2.5 + l.p)); 
+                ctx.beginPath(); 
+                ctx.arc(l.x * W, hz - l.y * H * .2 + H * .0001, 1.6 + l.p % 1.5, 0, 7); 
+                ctx.fill(); 
+            });
+            ctx.globalAlpha = 1; 
+            ctx.globalCompositeOperation = 'source-over';
+            const st = ctx.createLinearGradient(0, hz, 0, gy); 
+            st.addColorStop(0, '#2a1136'); 
+            st.addColorStop(1, '#0a0612');
+            ctx.fillStyle = st; 
+            ctx.fillRect(0, hz, W, gy - hz);                                                     // far street
+            }
+
+        
+        /* ===== preview loop ===== */
+        function frame(){
+            const t = Date.now() / 1000;
+            ctx.setTransform(DPR,0,0,DPR,0,0);
+            ctx.clearRect(0,0,W,H);
+            scenery(t, H);          // second value = where the background ends (bottom of the screen)
+            window.requestAnimationFrame(frame);
+            }
+        frame();
+
+
+    </script>
+</body>
+
+</html>
