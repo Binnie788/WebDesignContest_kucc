@@ -1,11 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="page_style.css">
+    <link rel="stylesheet" href="switch.css">
+    <script src="components.js" defer></script>
 </head>
-<body>
+
+<body class="locked">
+    <div id="gate"><span>TURN ON THE LIGHT</span>
+      <label class="sw"><input type="checkbox" id="sw" aria-label="Turn on the lights">
+          <div class="track"></div>
+          <div class="knob"></div>
+      </label>
+    </div>
+    <canvas id="c"></canvas>
+    <div id="scroll"></div>
+    <div class="cap" id="cap1">
+        <h2>Tihar Nights</h2>
+        <p>The city glows, house by house</p>
+    </div>
+
+    <div class="cap" id="cap2">
+        <h2>Rangoli &amp; Light</h2>
+        <p>Families gather where colour meets flame</p>
+    </div>
+
+    <div class="cap" id="cap3">
+        <h2></h2>
+    </div>
+
+    <div class="cap" id="cap4">
+        <h2>Auspicious day of Chhath Puja</h2>
+        <p>Morning of a Thousand Flames</p>
+    </div>
     
+    <main id="final">
+    <h1>Happy Tihar <span>&amp;</span> Chhath</h1>
+    <p class="sub">Festivals of light, family and gratitude</p>
+    <section class="cols">
+      <div class="card">
+        <h2>Tihar</h2>
+        <p>Tihar is Nepal&rsquo;s five-day festival of lights. Homes glow with diyos, colourful bulbs and rangoli, and
+          we honour the bond between people, animals and the divine.</p>
+        <ul>
+          <li>Kag Tihar - crows, messengers of news</li>
+          <li>Kukur Tihar - dogs get a tika and garland</li>
+          <li>Gai Tihar &amp; Laxmi Puja - cows, and lights to welcome Laxmi</li>
+          <li>Mha Puja / Govardhan Puja - self-worship and oxen</li>
+          <li>Bhai Tika - sisters bless their brothers</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Chhath</h2>
+        <p>Chhath is a Hindu festival of thanks to Surya, the Sun, and Chhathi Maiya. It is widely celebrated in
+          Nepal&rsquo;s Terai (Madhesh) and in Bihar, a few days after Tihar.</p>
+        <ul>
+          <li>Devotees fast and stand in rivers or ponds</li>
+          <li>Arghya is offered at sunset and at sunrise</li>
+          <li>A bamboo soop holds fruits, sugarcane, thekua and a diyo</li>
+          <li>It celebrates nature, purity and community</li>
+        </ul>
+      </div>
+    </section>
+   
+    <footer>
+      <div>KUCC Tihar-Chhath Web UI Design Competition</div>
+    <div>Binisha & Praneet</div>
+    </footer>
+</main>
 </body>
+
 </html>

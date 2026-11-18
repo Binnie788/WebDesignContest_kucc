@@ -1,0 +1,90 @@
+/* the black cover and posiitoning of the switch */
+#gate {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 2.2s, visibility 2.2s
+}
+
+/* once switch is on the black cover fades away; 
+the disappearing part maintained in the body.on section of page style */
+body.on #gate {
+    opacity: 0;
+    visibility: hidden
+}
+
+
+/* the properties of the text above switch */
+#gate span {
+    font-size: 14px;
+    letter-spacing: 5px;
+    opacity: .85;
+    margin-bottom: 24px
+}
+
+/* properties for position of the switch */
+.sw {
+    position: relative;
+    width: 96px;
+    height: 48px;
+}
+
+/* literally the check box which is hidden i.e. opacity hidden */
+.sw input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; 
+    cursor: pointer;
+    z-index: 2;
+    margin: 0
+}
+
+/* body of the switch */
+.track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 48px;
+    background: #1a1a1a;
+    border: 2px solid #444;
+    transition: .4s
+}
+
+/* properties of the circle in the switch */
+.knob {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #666;
+    transition: .4s
+}
+
+
+/* once the checkbox is true the track and circle change colors and position */
+.sw input:checked~.track {
+    background: #5a3300;
+    border-color: #ffb43c;
+    box-shadow: 0 0 30px #ff9d1c
+}
+
+.sw input:checked~.knob {
+    left: 54px;
+    background: #ffd36b;
+    box-shadow: 0 0 18px #ffb43c
+}
