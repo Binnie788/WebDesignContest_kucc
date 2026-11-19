@@ -1,5 +1,6 @@
-# Light Up Tihar & Chhath
+# Tihar-Chhath UI-Design
 
+This is a project made for the KUCC Tihar–Chhath Web UI Design Competition 2026.
 A scroll-driven story built with plain HTML, CSS and JavaScript. It opens with a single switch and carries a glowing Tihar night into the sunrise of Chhath, with every scene drawn on a canvas. There are no images, libraries or build steps.
 
 
