@@ -44,8 +44,8 @@ body.on canvas {
     opacity: 1;
 }
 
-/* scroll lekheko place */
-/* #hint {
+/* scroll lekheko so that people know */
+#hint {
     position: fixed;
     bottom: 18px;
     left: 0;
@@ -59,8 +59,8 @@ body.on canvas {
 }
 
 body #hint {
-    opacity: .7
-} */
+    opacity: 0.7;
+}
 
 .cap {
   position: fixed;
@@ -177,6 +177,16 @@ body #hint {
     opacity: .75;
     font-size: 14px;
     line-height: 1.5
+}
+
+#final footer #hint {
+    visibility: hidden;
+}
+
+/* hide the SCROLL hint once the footer is reached */
+body.hide-hint #hint {
+    opacity: 0;
+    transition: opacity .4s;   /* overrides the 2s delay in the #hint rule so it fades out right away */
 }
 
 /* ===== RESPONSIVE ===== */

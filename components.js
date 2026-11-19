@@ -39,6 +39,18 @@ document.getElementById('sw').addEventListener('change', function (e) {
     }
 });
 
+/* hide the SCROLL hint once the footer comes into view */
+(function () {
+    var footer = document.querySelector('#final footer');
+    function updateHint() {        // true when the top of the footer has entered the screen
+        var reached = footer.getBoundingClientRect().top < window.innerHeight;
+        document.body.classList.toggle('hide-hint', reached);   // adds or removes the class on <body>
+    }
+    window.addEventListener('scroll', updateHint);
+    window.addEventListener('resize', updateHint);
+    updateHint();   // run once on load
+})();
+
 
 function clamp(x, min, max) { min = (min === undefined) ? 0 : min; max = (max === undefined) ? 1 : max; return x < min ? min : (x > max ? max : x); }
 function ease(x) { x = clamp(x); return x < 0.5 ? 2 * x * x : 1 - 2 * (1 - x) * (1 - x); }          // smooth start and stop
